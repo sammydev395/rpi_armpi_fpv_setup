@@ -119,9 +119,9 @@ RUN git init && \
 # Copy startup script if it exists
 COPY --chown=ubuntu:ubuntu start_node.sh /home/ubuntu/start_node.sh
 
-# Create a startup script to run SSH daemon and keep container running
+# Create a startup script that starts SSH and keeps container running
 USER root
-RUN echo '#!/bin/bash\n/usr/sbin/sshd -D &\nsu - ubuntu -c "cd /home/ubuntu && exec $@"' > /entrypoint.sh && \
+RUN echo '#!/bin/bash\n/usr/sbin/sshd -D' > /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
 # Expose SSH port
@@ -129,4 +129,3 @@ EXPOSE 22
 
 WORKDIR /home/ubuntu
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["/bin/zsh"]
