@@ -73,6 +73,14 @@ USER ubuntu
 WORKDIR /home/ubuntu
 RUN sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 
+# Setup Git configuration and SSH for ubuntu user
+RUN git config --global user.name "ArmPi Developer" && \
+    git config --global user.email "sammydev395@users.noreply.github.com" && \
+    git config --global init.defaultBranch main
+
+# Create SSH directory and copy SSH keys
+RUN mkdir -p ~/.ssh && chmod 700 ~/.ssh
+
 # Copy the ArmPi FPV workspace
 COPY --chown=ubuntu:ubuntu armpi_fpv /home/ubuntu/armpi_fpv
 COPY --chown=ubuntu:ubuntu course /home/ubuntu/course
@@ -101,12 +109,19 @@ RUN echo "source /opt/ros/noetic/setup.zsh" >> ~/.zshrc && \
     echo "export ROS_MASTER_URI=http://localhost:11311" >> ~/.zshrc && \
     echo "export ROS_HOSTNAME=localhost" >> ~/.zshrc
 
+# Initialize Git repository in the workspace and fix ownership
+WORKDIR /home/ubuntu/armpi_fpv
+RUN git init && \
+    git remote remove origin || true && \
+    git remote add origin git@github.com:sammydev395/rpi_armpi_fpv.git && \
+    git config --global --add safe.directory /home/ubuntu/armpi_fpv
+
 # Copy startup script if it exists
 COPY --chown=ubuntu:ubuntu start_node.sh /home/ubuntu/start_node.sh
 
-# Create a startup script to run SSH daemon
+# Create a startup script to run SSH daemon and keep container running
 USER root
-RUN echo '#!/bin/bash\n/usr/sbin/sshd -D &\nexec "$@"' > /entrypoint.sh && \
+RUN echo '#!/bin/bash\n/usr/sbin/sshd -D &\nsu - ubuntu -c "cd /home/ubuntu && exec $@"' > /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
 # Expose SSH port
