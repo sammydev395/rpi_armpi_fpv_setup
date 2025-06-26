@@ -1,0 +1,31 @@
+# Docker and build artifacts
+*.log
+.DS_Store
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.bak
+*~
+
+# Docker volumes and data
+docker_data/
+volumes/
+
+# SSH keys (keep private)
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+
+# OS generated files
+Thumbs.db
+.Spotlight-V100
+.Trashes
+
+# ArmPi FPV source code (separate repository)
+armpi_fpv/
+course/
+software/
+docker_src/

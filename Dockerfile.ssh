@@ -1,0 +1,26 @@
+FROM armpi-fpv:latest
+
+# Switch to root to install SSH
+USER root
+
+# Install SSH server
+RUN apt-get update && apt-get install -y openssh-server && rm -rf /var/lib/apt/lists/*
+
+# Configure SSH
+RUN mkdir /var/run/sshd
+RUN echo 'root:rootpassword' | chpasswd
+RUN echo 'ubuntu:ubuntu' | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+
+# Create a startup script to run SSH daemon and keep container running
+RUN echo '#!/bin/bash\n/usr/sbin/sshd -D &\nexec "$@"' > /entrypoint.sh && \
+    chmod +x /entrypoint.sh
+
+# Expose SSH port
+EXPOSE 22
+
+WORKDIR /home/ubuntu
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["/bin/zsh"]
