@@ -32,7 +32,7 @@ docker run -d \
   -p 11311:11311 \
   --device=/dev/video0:/dev/video0 \
   --device=/dev/video1:/dev/video1 \
-  --device=/dev/ttyAMA10:/dev/ttyAMA10 \
+  --device=/dev/ttyAMA0:/dev/ttyAMA0 \
   --privileged \
   -v /dev:/dev \
   -v /sys:/sys \
@@ -64,7 +64,7 @@ if docker ps | grep -q armpi-ssh-hardware; then
     echo ""
     echo "🔍 Hardware Status:"
     docker exec armpi-ssh-hardware ls -la /dev/video* 2>/dev/null | head -3 || echo "   ⚠️  No video devices found"
-    docker exec armpi-ssh-hardware ls -la /dev/ttyAMA10 2>/dev/null || echo "   ⚠️  No serial device ttyAMA10 found"
+    docker exec armpi-ssh-hardware ls -la /dev/ttyAMA0 2>/dev/null || echo "   ⚠️  No serial device ttyAMA0 found"
     echo ""
     echo "📦 Using Snapshot Image: $IMAGE_NAME"
     echo "   - Includes AprilTag v3.x from source"
