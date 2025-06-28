@@ -1,0 +1,8 @@
+# Enable UART interfaces for ArmPi FPV
+enable_uart=1
+dtoverlay=uart0
+dtoverlay=uart1
+dtoverlay=uart2
+dtoverlay=uart3
+dtoverlay=uart4
+dtoverlay=uart5 

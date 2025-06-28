@@ -25,7 +25,7 @@ Thumbs.db
 .Trashes
 
 # ArmPi FPV source code (separate repository)
-armpi_fpv/
-course/
+# armpi_fpv/
+# course/
 software/
 docker_src/
