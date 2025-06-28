@@ -1,248 +1,242 @@
-# ArmPi FPV Docker Environment
+# ArmPi FPV Docker Development Environment
 
-A complete Docker-based development environment for the ArmPi FPV robotic arm with ROS Noetic, SSH access, and hardware integration.
+Complete Docker setup for ArmPi FPV robot development with ROS Noetic, SSH access, and hardware integration.
 
-## 🚀 Features
+## 🚀 Quick Start
 
-- **Complete ROS Noetic Environment** with MoveIt, Industrial Core, and robotics packages
-- **SSH Access** with key-based authentication for remote development
-- **Hardware Integration** with USB camera and serial device mapping
-- **Web Interfaces** for camera streaming and ROS bridge
-- **Development Tools** including Python packages for robotics and computer vision
-- **Ready-to-use Scripts** for easy container management
-
-## 📋 Prerequisites
-
-- Docker installed on your system
-- ArmPi FPV hardware (optional for development)
-- Windows 11 machine with SSH client (for remote development)
-
-## 🛠️ Quick Start
-
-### 1. Build the Docker Image
-
+### After Machine Reboot
 ```bash
-docker build -f Dockerfile.complete -t armpi-fpv-complete .
-```
-
-### 2. Run with Hardware Access (Recommended)
-
-Use the provided script for full hardware integration:
-
-```bash
+cd ~/armpi_docker_setup
 ./run_armpi_container.sh
 ```
 
-Or manually run with device mapping:
-
-```bash
-docker run -d \
-  --name armpi-ssh-hardware \
-  --restart unless-stopped \
-  -p 2222:22 \
-  -p 8080:8080 \
-  -p 9090:9090 \
-  -p 11311:11311 \
-  --device=/dev/video0:/dev/video0 \
-  --device=/dev/video1:/dev/video1 \
-  --device=/dev/ttyAMA10:/dev/ttyAMA10 \
-  --privileged \
-  -v /dev:/dev \
-  -v /sys:/sys \
-  armpi-fpv-complete
-```
-
-### 3. Connect via SSH
-
-From Windows 11 or any SSH client:
-
-```bash
-ssh ubuntu@localhost -p 2222
-```
-
-Or connect directly using your machine's IP:
-
-```bash
-ssh ubuntu@raspberrypidev -p 2222
-```
-
-## 🔧 Container Details
-
 ### SSH Access
-- **Port:** 2222 (mapped from container port 22)
-- **Username:** `ubuntu`
-- **Password:** `ubuntu` (fallback)
-- **SSH Key:** Pre-configured for `sammy_o@win11`
-
-### Available Services
-| Service | Port | Description |
-|---------|------|-------------|
-| SSH | 2222 | Remote terminal access |
-| Web Video Server | 8080 | Camera streaming interface |
-| ROS Bridge WebSocket | 9090 | Web-based ROS communication |
-| ROS Master | 11311 | ROS core service |
-
-### Hardware Mapping
-- **Camera:** `/dev/video0`, `/dev/video1`
-- **Serial:** `/dev/ttyAMA10` (ArmPi controller)
-- **Privileged Mode:** Full device access
-
-## 🎯 Usage
-
-### Starting ROS Nodes
-
-Inside the container, use the provided startup script:
-
 ```bash
-./start_node.sh
+# Local SSH access
+ssh ubuntu@localhost -p 2222
+
+# Remote SSH access (from Windows/other machines)
+ssh ubuntu@<raspberry-pi-ip> -p 2222
 ```
 
-This script will:
-- Source the ROS environment
-- Set up proper environment variables
-- Launch the main ArmPi FPV bringup sequence
+## 📦 Current Setup Status
 
-### Available Launch Options
+### ✅ Running Container
+- **Name**: `armpi-ssh-hardware`
+- **Image**: `armpi_ros_container:with-apriltag-mediapipe` (6.09GB)
+- **Uptime**: Started 47+ hours ago
+- **Status**: Running with full hardware access
 
-1. **Full System:** `roslaunch armpi_fpv_bringup bringup.launch`
-2. **Camera Only:** `roslaunch armpi_fpv_bringup usb_cam.launch`
-3. **MoveIt Demo:** `roslaunch armpi_fpv_moveit_config demo.launch`
+### 🐳 Available Docker Images
+| Image | Tag | Size | Description |
+|-------|-----|------|-------------|
+| `armpi_ros_container` | `with-apriltag-mediapipe` | 6.09GB | **Latest snapshot** with all packages |
+| `armpi_fpv_ros` | `snapshot-20250625_185856` | 5.46GB | Previous snapshot |
+| `armpi_fpv_ros` | `latest` | 5.22GB | Base build |
 
-### Development with Cursor IDE
+## 🔧 Container Features
 
-1. Install the Remote SSH extension in Cursor IDE
-2. Add SSH configuration:
-   ```
-   Host armpi-fpv
-       HostName localhost  # or raspberrypidev
-       Port 2222
-       User ubuntu
-   ```
-3. Connect to the remote host
-4. Open the workspace at `/home/ubuntu/armpi_fpv`
+### Installed Packages
+- ✅ **ROS Noetic** (Desktop + MoveIt + Industrial)
+- ✅ **AprilTag v3.x** (built from source - swatbotics/apriltag)
+- ✅ **MediaPipe** (computer vision)
+- ✅ **SSH Server** (remote development)
+- ✅ **Git** (version control)
+- ✅ **Python packages**: ujson, roboticstoolbox-python, etc.
 
-## 📁 Project Structure
+### Hardware Access
+- 📹 **Camera**: `/dev/video0`, `/dev/video1` (ArmPi FPV USB cameras)
+- 🔌 **Serial**: `/dev/ttyAMA10` (robot control)
+- 🖥️ **Display**: X11 forwarding enabled
+- 💾 **Full access**: Privileged mode with `/dev` and `/sys` mounted
 
-```
-/home/ubuntu/
-├── armpi_fpv/          # Main ROS workspace
-├── course/             # Tutorial and course materials
-├── software/           # Additional software components
-├── docker_src/         # Docker-related source files
-└── start_node.sh       # ROS startup script
-```
+### Network Ports
+| Port | Service | Description |
+|------|---------|-------------|
+| 2222 | SSH | Remote shell access |
+| 8080 | Web Video | Camera stream web interface |
+| 9090 | ROS Bridge | WebSocket ROS communication |
+| 11311 | ROS Master | ROS core service |
 
-## 🔍 Troubleshooting
+## 🛠️ Management Scripts
 
-### Common Issues
-
-**SSH Connection Failed:**
-- Verify container is running: `docker ps`
-- Check port mapping: ensure 2222 is not in use
-- Try password authentication: `ubuntu`
-
-**Camera Not Working:**
-- Ensure camera devices are mapped: `--device=/dev/video0:/dev/video0`
-- Check camera permissions in container
-- Verify camera is connected to host
-
-**ROS Nodes Failing:**
-- Check if hardware devices are accessible
-- Verify environment variables are set
-- Review logs in `/root/.ros/log/`
-
-### Container Management
-
-**Stop Container:**
+### Primary Scripts
 ```bash
-docker stop armpi-ssh-hardware
+# Start container (after reboot or first time)
+./run_armpi_container.sh
+
+# Enter running container
+./enter.sh
+
+# Stop container
+./stop.sh
+
+# Start ROS services
+./start_ros.sh
 ```
 
-**Start Container:**
+### Container Commands
 ```bash
-docker start armpi-ssh-hardware
-```
+# Shell access to running container
+docker exec -it armpi-ssh-hardware /bin/zsh
 
-**Remove Container:**
-```bash
-docker rm armpi-ssh-hardware
-```
+# Start ROS nodes directly
+docker exec armpi-ssh-hardware /home/ubuntu/start_node.sh
 
-**View Logs:**
-```bash
+# Check container status
+docker ps --filter name=armpi-ssh-hardware
+
+# View container logs
 docker logs armpi-ssh-hardware
 ```
 
-## 🧩 Installed Packages
+## 🔐 SSH Configuration
 
-### ROS Packages
-- ros-noetic-desktop
-- ros-noetic-moveit
-- ros-noetic-industrial-core
-- ros-noetic-rosbridge-server
-- ros-noetic-usb-cam
-- ros-noetic-web-video-server
+### Authentication Methods
+- **Username**: `ubuntu`
+- **Password**: `ubuntu`
+- **SSH Key**: Pre-configured for `sammy_o@win11`
 
-### Python Packages
-- roboticstoolbox-python
-- modern-robotics
-- opencv-python
-- mediapipe
-- ujson
-- numpy, scipy, matplotlib
-- And many more...
-
-### System Tools
-- SSH server with key authentication
-- Oh-My-Zsh shell
-- Git, Vim, Nano
-- Development tools (build-essential, cmake)
-
-## 🚧 Development
-
-### Building Custom Images
-
-Modify `Dockerfile.complete` and rebuild:
-
+### SSH Key Setup
 ```bash
-docker build -f Dockerfile.complete -t armpi-fpv-custom .
+# SSH keys are mounted from host
+# Host keys: /home/sammydev295/.ssh
+# Container keys: /home/ubuntu/.ssh_host (read-only)
 ```
 
-### Adding Dependencies
+## 🤖 ROS Environment
 
-Add packages to the Dockerfile:
-
-```dockerfile
-RUN apt-get install -y your-package
-# or
-RUN pip3 install your-python-package
+### Workspace Structure
+```
+/home/ubuntu/armpi_fpv/
+├── src/          # ROS packages
+├── build/        # Build artifacts  
+├── devel/        # Development space
+└── .git/         # Git repository
 ```
 
-### Workspace Development
+### Starting ROS
+```bash
+# Inside container
+source /home/ubuntu/armpi_fpv/devel/setup.bash
+roslaunch armpi_fpv_bringup armpi_fpv.launch
 
-The ROS workspace is persistent in the container. Changes to code will be maintained between container restarts.
+# Or use the script
+/home/ubuntu/start_node.sh
+```
 
-## 📞 Support
+## 🔄 Development Workflow
 
-### Hardware Requirements
-- ArmPi FPV robotic arm
-- USB camera (compatible with Video4Linux)
-- Raspberry Pi or compatible ARM64 system
+### 1. Connect with Cursor IDE
+1. Install SSH extension in Cursor IDE
+2. Connect to: `ubuntu@<raspberry-pi-ip>:2222`
+3. Open workspace: `/home/ubuntu/armpi_fpv`
 
-### Software Versions
-- ROS Noetic (Ubuntu 20.04 Focal)
-- Python 3.8
-- OpenCV 4.x
+### 2. Git Operations
+```bash
+# Inside container
+cd /home/ubuntu/armpi_fpv
+git status
+git add .
+git commit -m "Your changes"
+git push origin main
+```
 
-## 🏆 Features Achieved
+### 3. Testing Hardware
+```bash
+# Check cameras
+ls -la /dev/video*
 
-✅ **SSH Remote Development** - Full IDE integration  
-✅ **Hardware Access** - Camera and serial devices mapped  
-✅ **ROS Environment** - Complete robotics development stack  
-✅ **Web Interfaces** - Browser-based monitoring and control  
-✅ **Package Management** - All dependencies pre-installed  
-✅ **Easy Deployment** - One-command container startup  
+# Check serial device
+ls -la /dev/ttyAMA10
+
+# Test camera stream
+roslaunch usb_cam usb_cam-test.launch
+```
+
+## 📋 Troubleshooting
+
+### Container Won't Start
+```bash
+# Check if image exists
+docker images | grep armpi
+
+# Check for port conflicts
+sudo netstat -tulpn | grep :2222
+
+# Force restart
+docker stop armpi-ssh-hardware
+docker rm armpi-ssh-hardware
+./run_armpi_container.sh
+```
+
+### SSH Connection Issues
+```bash
+# Test SSH locally first
+ssh ubuntu@localhost -p 2222
+
+# Check SSH service in container
+docker exec armpi-ssh-hardware systemctl status ssh
+
+# Verify SSH keys
+docker exec armpi-ssh-hardware ls -la /home/ubuntu/.ssh/
+```
+
+### Hardware Access Problems
+```bash
+# Check device permissions
+ls -la /dev/video* /dev/ttyAMA*
+
+# Restart with privileged mode (already enabled)
+./run_armpi_container.sh
+```
+
+### ROS Issues
+```bash
+# Source environment
+source /home/ubuntu/armpi_fpv/devel/setup.bash
+
+# Check ROS master
+echo $ROS_MASTER_URI
+
+# List ROS topics
+rostopic list
+
+# Check missing packages
+rosdep check --from-paths src --ignore-src -r
+```
+
+## 📚 Additional Resources
+
+### Documentation Files
+- **HiWonder Guide**: Found in mounted system image at `/home/pi/Bookshelf/BeginnersGuide-5thEd-Eng_v3.pdf`
+- **Setup Summary**: `SETUP_SUMMARY.md`
+- **Git Guide**: `GIT_SETUP_GUIDE.md`
+
+### Repository Links
+- **Docker Setup**: `git@github.com:sammydev395/armpi_docker_setup.git`
+- **Container Contents**: `git@github.com:sammydev395/armpi_container_repo.git`
+
+### Key File Locations
+```
+~/armpi_docker_setup/        # This repository
+├── Dockerfile               # Container build instructions
+├── docker-compose.yml       # Alternative compose setup
+├── run_armpi_container.sh   # Main startup script
+├── start_node.sh            # ROS startup script
+└── README.md               # This file
+```
+
+## 🎯 Next Steps
+
+1. **After Reboot**: Run `./run_armpi_container.sh`
+2. **Connect IDE**: SSH to `ubuntu@<pi-ip>:2222`
+3. **Start Development**: Open `/home/ubuntu/armpi_fpv` in Cursor IDE
+4. **Test Hardware**: Run camera and servo tests
+5. **Start Coding**: Begin your ArmPi FPV projects!
 
 ---
 
-**Ready to develop robotics applications with the ArmPi FPV!** 🤖✨
+**Last Updated**: June 28, 2025  
+**Container Version**: `armpi_ros_container:with-apriltag-mediapipe`  
+**Environment**: Raspberry Pi 4 + Ubuntu + Docker + ROS Noetic

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ArmPi FPV Docker Container Runner with Hardware Access
-# This script runs the ArmPi container with proper device mapping using snapshot image
+# This script runs the ArmPi container with proper device mapping
 
 echo "🚀 Starting ArmPi FPV Container with Hardware Access..."
 
@@ -10,19 +10,14 @@ echo "🧹 Cleaning up existing container..."
 docker stop armpi-ssh-hardware 2>/dev/null || true
 docker rm armpi-ssh-hardware 2>/dev/null || true
 
-# Use the latest snapshot image with AprilTag and MediaPipe
-IMAGE_NAME="armpi_ros_container:with-apriltag-mediapipe"
-
-# Check if snapshot image exists
-if ! docker images | grep -q "armpi_ros_container.*with-apriltag-mediapipe"; then
-    echo "❌ Snapshot image not found: $IMAGE_NAME"
-    echo "Available images:"
-    docker images | grep armpi
-    exit 1
+# Check if image exists, build if not
+if ! docker images | grep -q "armpi-fpv-complete"; then
+    echo "🔨 Building ArmPi FPV Docker image..."
+    docker build -f Dockerfile.complete -t armpi-fpv-complete .
 fi
 
-# Run container with comprehensive device access and SSH keys mounted
-echo "🐳 Starting Docker container with snapshot image..."
+# Run container with comprehensive device access
+echo "🐳 Starting Docker container..."
 docker run -d \
   --name armpi-ssh-hardware \
   --restart unless-stopped \
@@ -37,10 +32,9 @@ docker run -d \
   -v /dev:/dev \
   -v /sys:/sys \
   -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
-  -v /home/sammydev295/.ssh:/home/ubuntu/.ssh_host:ro \
   -e DISPLAY=$DISPLAY \
   -e QT_X11_NO_MITSHM=1 \
-  $IMAGE_NAME
+  armpi-fpv-complete
 
 # Wait a moment for container to start
 sleep 5
@@ -65,11 +59,6 @@ if docker ps | grep -q armpi-ssh-hardware; then
     echo "🔍 Hardware Status:"
     docker exec armpi-ssh-hardware ls -la /dev/video* 2>/dev/null | head -3 || echo "   ⚠️  No video devices found"
     docker exec armpi-ssh-hardware ls -la /dev/ttyAMA10 2>/dev/null || echo "   ⚠️  No serial device ttyAMA10 found"
-    echo ""
-    echo "📦 Using Snapshot Image: $IMAGE_NAME"
-    echo "   - Includes AprilTag v3.x from source"
-    echo "   - Includes MediaPipe"
-    echo "   - Includes all ROS packages"
     echo ""
     echo "🚀 Quick Commands:"
     echo "   Start ROS:       docker exec armpi-ssh-hardware /home/ubuntu/start_node.sh"

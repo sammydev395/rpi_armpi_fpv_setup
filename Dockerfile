@@ -1,6 +1,6 @@
 FROM ros:noetic
 # Install ROS desktop packages first
-RUN apt-get update && apt-get install -y ros-noetic-desktop ros-noetic-moveit ros-noetic-industrial-core && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y ros-noetic-desktop ros-noetic-moveit ros-noetic-industrial-core ros-noetic-rosbridge-server ros-noetic-usb-cam ros-noetic-web-video-server && rm -rf /var/lib/apt/lists/*
 
 
 # Install system dependencies including SSH server
@@ -36,6 +36,11 @@ RUN apt-get update && apt-get install -y \
     libdc1394-22-dev \
     libusb-1.0-0-dev \
     openssh-server \
+
+# Install AprilTag from source (swatbotics version with apriltag_family_create support)
+RUN cd /tmp && rm -rf apriltag* && git clone https://github.com/swatbotics/apriltag.git apriltag_v2 && \
+    cd /tmp/apriltag_v2 && cmake . && make && make install && ldconfig && \
+    rm -rf /tmp/apriltag*
     && rm -rf /var/lib/apt/lists/*
 
 # Configure SSH
@@ -47,6 +52,8 @@ RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so
 
 # Install Python packages commonly used in ROS robotics
 RUN pip3 install \
+    ujson \
+    mediapipe \
     numpy \
     opencv-python \
     scipy \
